@@ -2,20 +2,22 @@ import re
 
 
 class TokenType:
-    def __init__(self, title: str, regexp: str):
+    def __init__(self, title: str, regexp: str, is_strong: bool = False):
         self.title = title
         self.regexp = regexp
+        self.is_strong = is_strong
 
 
 TOKEN_TYPES = [
-    TokenType("IF_STATEMENT", "^i(f)?$"),
+    TokenType("IF_STATEMENT", "if", True),
+    TokenType("READ", "read", True),
+    TokenType("OUTPUT", "output", True),
+    TokenType("GOTO", "goto", True),
+    TokenType("WHILE_STATEMENT", "while", True),
+
     TokenType("WHITESPACE", "[ \t]"),
-    TokenType("READ", "^r(e(a(d)?)?)?$"),
-    TokenType("OUTPUT", r"^o(u(t(p(u(t)?)?)?)?)?$"),
     TokenType("STRING", '^"[а-яА-Яa-zA-Z ]*(")?'),
-    TokenType("WHILE_STATEMENT", "^w(h(i(l(e)?)?)?)?$"),
     TokenType("LABEL", ':[a-z]*'),
-    TokenType("GOTO", "^g(o(t(o)?)?)?$"),
     TokenType("VARIABLE", "[a-z]*"),
     TokenType("NUMBER", "[0-9]*"),
     TokenType("EQUAL", "\\="),
@@ -57,11 +59,15 @@ class Lexer:
                 for token_type in TOKEN_TYPES:
                     tmp_char_index = char_index
                     try:
-                        while re.fullmatch(token_type.regexp, line[char_index:tmp_char_index + 1]) and tmp_char_index < len(line):
-                            tmp_char_index += 1
+                        if token_type.is_strong:
+                            if re.fullmatch(token_type.regexp, line[char_index:char_index + len(token_type.regexp)]):
+                                tmp_char_index = char_index + len(token_type.regexp)
+                        else:
+                            while re.fullmatch(token_type.regexp, line[char_index:tmp_char_index + 1]) and tmp_char_index < len(line):
+                                tmp_char_index += 1
                     except re.error:
                         raise Exception(f"Ошибка")
-                    if tmp_char_index != char_index:
+                    if tmp_char_index != char_index and re.fullmatch(token_type.regexp, line[char_index:tmp_char_index]):
                         if token_type.title != "WHITESPACE":
                             line_tokens.append(Token(token_type, line[char_index:tmp_char_index]))
                             if token_type.title == "LABEL":
