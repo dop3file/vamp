@@ -1,0 +1,11 @@
+x = 0
+
+:loop
+output x
+x = x + 1
+if (x ~ 1000) {
+    goto exit
+}
+goto loop
+
+:exit
