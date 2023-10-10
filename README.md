@@ -1,0 +1,2 @@
+# vamp
+Minimalistic programming language
