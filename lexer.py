@@ -47,6 +47,17 @@ class Lexer:
         self.code = code
         self.labels = {}
 
+    def parse_string(self, line: str, char_index: int, line_tokens: list[Token]):
+        last_mark = char_index + 1
+        for tmp_char_index in range(last_mark, len(line)):
+            if line[tmp_char_index] == '"':
+                last_mark = tmp_char_index
+        line_tokens.append(Token(
+            TokenType("STRING", '^"[а-яА-Яa-zA-Z ]*(")?'),
+            value=line[char_index:last_mark + 1]
+        ))
+        return last_mark + 1
+
     def analyze(self) -> list[list[Token]]:
         tokens = []
         line_index = 0
@@ -56,6 +67,8 @@ class Lexer:
             line_tokens = []
             char_index = 0
             while char_index < len(line):
+                if line[char_index] == '"':
+                    char_index = self.parse_string(line, char_index, line_tokens)
                 for token_type in TOKEN_TYPES:
                     tmp_char_index = char_index
                     try:
